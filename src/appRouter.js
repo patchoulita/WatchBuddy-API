@@ -15,7 +15,11 @@ function mountAppRoutes(app, {
   providerContext,
   isVideoMimeType
 }) {
-  app.use(createRootRouter());
+  app.use(
+    createRootRouter({
+      tokenStore
+    })
+  );
   
   app.use(createHealthRouter());
   
