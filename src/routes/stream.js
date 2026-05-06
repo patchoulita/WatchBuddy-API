@@ -2,10 +2,8 @@
 const express = require("express");
 
 function createStreamRouter({
-  google,
-  oauth2Client,
+  googleDriveService,
   latestTokensRef,
-  setOAuthCredentialsFromTokens,
   isVideoMimeType
 }) {
   const router = express.Router();
@@ -20,20 +18,10 @@ function createStreamRouter({
         });
       }
 
-      const auth = setOAuthCredentialsFromTokens(
-        oauth2Client,
-        latestTokensRef.current
+      const file = await googleDriveService.getFileMetadata(
+        latestTokensRef.current,
+        fileId
       );
-
-      const drive = google.drive({ version: "v3", auth });
-
-      const metaResponse = await drive.files.get({
-        fileId,
-        fields: "id,name,mimeType,size,capabilities/canDownload",
-        supportsAllDrives: true
-      });
-
-      const file = metaResponse.data;
       const totalSize = Number(file.size);
 
       if (!isVideoMimeType(file.mimeType)) {
@@ -50,15 +38,9 @@ function createStreamRouter({
       }
 
       if (!req.headers.range) {
-        const mediaResponse = await drive.files.get(
-          {
-            fileId,
-            alt: "media",
-            supportsAllDrives: true
-          },
-          {
-            responseType: "stream"
-          }
+        const mediaResponse = await googleDriveService.getFileStream(
+          latestTokensRef.current,
+          fileId
         );
 
         res.writeHead(200, {
@@ -83,18 +65,10 @@ function createStreamRouter({
 
       const chunkSize = (end - start) + 1;
 
-      const mediaResponse = await drive.files.get(
-        {
-          fileId,
-          alt: "media",
-          supportsAllDrives: true
-        },
-        {
-          responseType: "stream",
-          headers: {
-            Range: `bytes=${start}-${end}`
-          }
-        }
+      const mediaResponse = await googleDriveService.getFileStream(
+        latestTokensRef.current,
+        fileId,
+        `bytes=${start}-${end}`
       );
 
       res.writeHead(206, {
