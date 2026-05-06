@@ -3,6 +3,7 @@ const express = require("express");
 
 function createMediaRouter({
   google,
+  oauth2Client,
   requireLogin,
   setOAuthCredentialsFromTokens,
   isVideoMimeType
@@ -11,7 +12,7 @@ function createMediaRouter({
 
   router.get("/media", requireLogin, async (req, res) => {
     try {
-      const auth = setOAuthCredentialsFromTokens(req.session.tokens);
+      const auth = setOAuthCredentialsFromTokens(oauth2Client, req.session.tokens);
       const drive = google.drive({ version: "v3", auth });
 
       const response = await drive.files.list({
