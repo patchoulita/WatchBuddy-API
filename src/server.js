@@ -12,11 +12,11 @@ const createApp = require("./app");
 const port = env.PORT;
 
 const sessionConfig = {
-  secret: SESSION_SECRET,
+  secret: env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    // paste the exact same cookie config you currently use
+    // use the same cookie settings you had before Step 19
   }
 };
 
