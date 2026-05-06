@@ -9,13 +9,14 @@ function createGoogleDriveService({
     return google.drive({ version: "v3", auth });
   }
 
-  async function listVideoFiles(tokens) {
+  async function listVideoFiles(tokens, pageToken = null) {
     const drive = createDriveClient(tokens);
 
     const response = await drive.files.list({
       q: "trashed = false and mimeType contains 'video/'",
       fields: "files(id,name,mimeType,size,thumbnailLink,videoMediaMetadata,capabilities/canDownload),nextPageToken",
       pageSize: 100,
+      pageToken: pageToken || undefined,
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
     });
