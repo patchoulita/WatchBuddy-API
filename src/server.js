@@ -8,6 +8,7 @@ const createApp = require("./app");
 const getAuthContext = require("./auth/getAuthContext");
 
 async function createServer() {
+  console.log("REDIS_URL present?", Boolean(process.env.REDIS_URL));
   const port = env.PORT;
 
   const authContext = await getAuthContext({
