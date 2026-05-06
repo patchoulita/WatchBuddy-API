@@ -4,6 +4,8 @@ const express = require("express");
 const session = require("express-session");
 const { google } = require("googleapis");
 
+const schemaRouter = require("./routes/schema");
+
 const app = express();
 app.set("trust proxy", 1);
 
@@ -16,6 +18,8 @@ app.use(
     saveUninitialized: false
   })
 );
+
+app.use(schemaRouter);
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -49,16 +53,6 @@ function isVideoMimeType(mimeType) {
 
 app.get("/", (req, res) => {
   res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
-});
-
-app.get("/api/v1/schema", (req, res) => {
-  const baseUrl = `https://${req.get("host")}`;
-
-  res.json({
-    provider_name: "Nobody TV",
-    description: "Streaming nowhere...",
-    proxy_url: baseUrl
-  });
 });
 
 app.get("/auth/google", (req, res) => {
