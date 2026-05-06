@@ -14,10 +14,7 @@ const port = env.PORT;
 const sessionConfig = {
   secret: env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false,
-  cookie: {
-    // use the same cookie settings you had before Step 19
-  }
+  saveUninitialized: false
 };
 
 const app = createApp({ sessionConfig });
