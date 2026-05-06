@@ -127,7 +127,7 @@ app.get("/media", requireLogin, async (req, res) => {
         height: file.videoMediaMetadata?.height || null,
         thumbnail: file.thumbnailLink || null,
         canDownload: file.capabilities?.canDownload ?? null,
-        streamUrl: `${req.protocol}://${req.get("host")}/stream/${encodeURIComponent(file.id)}`
+        streamUrl: `https://${req.get("host")}/stream/${encodeURIComponent(file.id)}`
       }));
 
     res.json({
