@@ -2,7 +2,7 @@
 const express = require("express");
 
 function createStreamRouter({
-  googleDriveService,
+  googleDrivePlugin,
   latestTokensRef,
   isVideoMimeType
 }) {
@@ -18,7 +18,7 @@ function createStreamRouter({
         });
       }
 
-      const file = await googleDriveService.getFileMetadata(
+      const file = await googleDrivePlugin.getStreamFile(
         latestTokensRef.current,
         fileId
       );
@@ -38,7 +38,7 @@ function createStreamRouter({
       }
 
       if (!req.headers.range) {
-        const mediaResponse = await googleDriveService.getFileStream(
+        const mediaResponse = await googleDrivePlugin.getStreamResponse(
           latestTokensRef.current,
           fileId
         );
@@ -65,7 +65,7 @@ function createStreamRouter({
 
       const chunkSize = (end - start) + 1;
 
-      const mediaResponse = await googleDriveService.getFileStream(
+      const mediaResponse = await googleDrivePlugin.getStreamResponse(
         latestTokensRef.current,
         fileId,
         `bytes=${start}-${end}`
