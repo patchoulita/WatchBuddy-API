@@ -2,28 +2,16 @@
 const express = require("express");
 
 function createMediaRouter({
-  google,
-  oauth2Client,
+  googleDriveService,
   requireLogin,
-  setOAuthCredentialsFromTokens,
   isVideoMimeType
 }) {
   const router = express.Router();
 
   router.get("/media", requireLogin, async (req, res) => {
     try {
-      const auth = setOAuthCredentialsFromTokens(oauth2Client, req.session.tokens);
-      const drive = google.drive({ version: "v3", auth });
-
-      const response = await drive.files.list({
-        q: "trashed = false and mimeType contains 'video/'",
-        fields: "files(id,name,mimeType,size,thumbnailLink,videoMediaMetadata,capabilities/canDownload),nextPageToken",
-        pageSize: 100,
-        supportsAllDrives: true,
-        includeItemsFromAllDrives: true
-      });
-
-      const files = response.data.files || [];
+      const data = await googleDriveService.listVideoFiles(req.session.tokens);
+      const files = data.files || [];
 
       const items = files
         .filter(file => isVideoMimeType(file.mimeType))
@@ -43,7 +31,7 @@ function createMediaRouter({
 
       res.json({
         items,
-        nextPageToken: response.data.nextPageToken || null
+        nextPageToken: data.nextPageToken || null
       });
     } catch (error) {
       const details = error.response?.data || error.message;
