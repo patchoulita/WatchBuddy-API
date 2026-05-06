@@ -1,6 +1,12 @@
-// index.js
-const { app, port } = require("./src/server");
+const { createServer } = require("./src/server");
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+createServer()
+  .then(({ app, port }) => {
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });
