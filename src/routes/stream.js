@@ -8,6 +8,21 @@ function createStreamRouter({
 }) {
   const router = express.Router();
 
+  function attachStreamCleanup(req, res, upstream) {
+    const cleanup = () => {
+      if (upstream && !upstream.destroyed) {
+        upstream.destroy();
+      }
+    };
+
+    req.on("close", cleanup);
+    req.on("aborted", cleanup);
+    res.on("close", cleanup);
+    res.on("finish", cleanup);
+    res.on("error", cleanup);
+    upstream.on("error", cleanup);
+  }
+
   router.get("/stream/:fileId", async (req, res) => {
     try {
       const { fileId } = req.params;
@@ -45,13 +60,16 @@ function createStreamRouter({
           fileId
         );
 
+        const upstream = mediaResponse.data;
+        attachStreamCleanup(req, res, upstream);
+
         res.writeHead(200, {
           "Content-Type": file.mimeType || "application/octet-stream",
           "Content-Length": totalSize,
           "Accept-Ranges": "bytes"
         });
 
-        return mediaResponse.data.pipe(res);
+        return upstream.pipe(res);
       }
 
       const range = req.headers.range;
@@ -73,6 +91,9 @@ function createStreamRouter({
         `bytes=${start}-${end}`
       );
 
+      const upstream = mediaResponse.data;
+      attachStreamCleanup(req, res, upstream);
+
       res.writeHead(206, {
         "Content-Range": `bytes ${start}-${end}/${totalSize}`,
         "Accept-Ranges": "bytes",
@@ -80,7 +101,7 @@ function createStreamRouter({
         "Content-Type": file.mimeType || "application/octet-stream"
       });
 
-      mediaResponse.data.pipe(res);
+      upstream.pipe(res);
     } catch (error) {
       const status = error.response?.status || 500;
       const details = error.response?.data || error.message;
