@@ -1,6 +1,7 @@
 const env = require("./config/env");
 const { google, oauth2Client } = require("./config/google");
 const { isVideoMimeType } = require("./lib/media");
+const requestLogger = require("./lib/requestLogger");
 
 const getProviderContext = require("./providers/getProviderContext");
 const mountAppRoutes = require("./appRouter");
@@ -24,6 +25,9 @@ async function createServer() {
   const app = createApp({
     sessionConfig: authContext.sessionConfig
   });
+
+  // Log all incoming requests (for debugging what WatchBuddy calls)
+  app.use(requestLogger);
 
   const providerContext = getProviderContext({
     google,
