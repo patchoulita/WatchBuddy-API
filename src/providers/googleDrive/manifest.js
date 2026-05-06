@@ -6,7 +6,7 @@ const googleDriveManifest = {
   main_url: "https://drive.google.com",
   favicon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png",
   main_page: {
-    all: "All Videos"
+    "drive://all": "All Videos"
   },
   capabilities: {
     mediaCatalog: true,
