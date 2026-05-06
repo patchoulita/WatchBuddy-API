@@ -6,6 +6,7 @@ const { google } = require("googleapis");
 
 const schemaRouter = require("./routes/schema");
 const createAuthRouter = require("./routes/auth");
+const createMediaRouter = require("./routes/media");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -42,6 +43,15 @@ app.use(
   })
 );
 
+app.use(
+  createMediaRouter({
+    google,
+    requireLogin,
+    setOAuthCredentialsFromTokens,
+    isVideoMimeType
+  })
+);
+
 function requireLogin(req, res, next) {
   if (!req.session.tokens || !req.session.tokens.access_token) {
     return res
@@ -62,50 +72,6 @@ function isVideoMimeType(mimeType) {
 
 app.get("/", (req, res) => {
   res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
-});
-
-app.get("/media", requireLogin, async (req, res) => {
-  try {
-    const auth = setOAuthCredentialsFromTokens(req.session.tokens);
-    const drive = google.drive({ version: "v3", auth });
-
-    const response = await drive.files.list({
-      q: "trashed = false and mimeType contains 'video/'",
-      fields: "files(id,name,mimeType,size,thumbnailLink,videoMediaMetadata,capabilities/canDownload),nextPageToken",
-      pageSize: 100,
-      supportsAllDrives: true,
-      includeItemsFromAllDrives: true
-    });
-
-    const files = response.data.files || [];
-
-    const items = files
-      .filter(file => isVideoMimeType(file.mimeType))
-      .map(file => ({
-        id: file.id,
-        title: file.name || "Untitled Video",
-        type: "video",
-        mimeType: file.mimeType || null,
-        size: file.size || null,
-        durationMillis: file.videoMediaMetadata?.durationMillis || null,
-        width: file.videoMediaMetadata?.width || null,
-        height: file.videoMediaMetadata?.height || null,
-        thumbnail: file.thumbnailLink || null,
-        canDownload: file.capabilities?.canDownload ?? null,
-        streamUrl: `https://${req.get("host")}/stream/${encodeURIComponent(file.id)}`
-      }));
-
-    res.json({
-      items,
-      nextPageToken: response.data.nextPageToken || null
-    });
-  } catch (error) {
-    const details = error.response?.data || error.message;
-    res.status(500).json({
-      error: "Failed to list Drive media",
-      details
-    });
-  }
 });
 
 app.get("/stream/:fileId", async (req, res) => {
@@ -208,24 +174,6 @@ app.get("/stream/:fileId", async (req, res) => {
       details
     });
   }
-});
-
-app.get("/video-test/:fileId", (req, res) => {
-  const { fileId } = req.params;
-
-  res.send(`
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>Video Test</title>
-      </head>
-      <body>
-        <h1>Video Test</h1>
-        <video controls playsinline width="800" src="/stream/${encodeURIComponent(fileId)}"></video>
-      </body>
-    </html>
-  `);
 });
 
 app.listen(port, () => {
