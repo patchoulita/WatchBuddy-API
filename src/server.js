@@ -3,9 +3,7 @@ const { google, oauth2Client, SCOPES } = require("./config/google");
 const { requireLogin, setOAuthCredentialsFromTokens } = require("./lib/auth");
 const { isVideoMimeType } = require("./lib/media");
 
-const createProviders = require("./providers");
-const selectProvider = require("./providers/selectProvider");
-const createProviderContext = require("./providers/createProviderContext");
+const getProviderContext = require("./providers/getProviderContext");
 const mountAppRoutes = require("./appRouter");
 const createApp = require("./app");
 
@@ -21,16 +19,12 @@ const app = createApp({ sessionConfig });
 
 const latestTokensRef = { current: null };
 
-const providers = createProviders({
+const providerContext = getProviderContext({
   google,
   oauth2Client,
   setOAuthCredentialsFromTokens,
   isVideoMimeType
 });
-
-const providerContext = createProviderContext(
-  selectProvider(providers)
-);
 
 mountAppRoutes(app, {
   oauth2Client,
