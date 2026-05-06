@@ -13,7 +13,7 @@ async function createServer() {
 
   const authContext = await getAuthContext({
     sessionSecret: env.SESSION_SECRET,
-    redisUrl: env.REDIS_URL,
+    redisUrl: process.env.REDIS_URL,
     cookieConfig: {
       httpOnly: true,
       secure: false,
