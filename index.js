@@ -55,13 +55,9 @@ app.get("/api/v1/schema", (req, res) => {
   const baseUrl = `https://${req.get("host")}`;
 
   res.json({
-    id: "nobody-tv",
-    name: "Nobody TV",
+    provider_name: "Nobody TV",
     description: "Streaming nowhere...",
-    version: "1.0.0",
-    endpoints: {
-      media: `${baseUrl}/media`
-    }
+    proxy_url: baseUrl
   });
 });
 
