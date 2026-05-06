@@ -15,7 +15,7 @@ function createGoogleDriveService({
     const response = await drive.files.list({
       q: "trashed = false and mimeType contains 'video/'",
       fields: "files(id,name,mimeType,size,thumbnailLink,videoMediaMetadata,capabilities/canDownload),nextPageToken",
-      pageSize: 100,
+      pageSize: 25,
       pageToken: pageToken || undefined,
       supportsAllDrives: true,
       includeItemsFromAllDrives: true
