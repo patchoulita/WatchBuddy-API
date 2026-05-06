@@ -1,9 +1,9 @@
-
-
 const express = require("express");
 const session = require("express-session");
 const env = require("./config/env");
 const { google, oauth2Client, SCOPES } = require("./config/google");
+const { requireLogin, setOAuthCredentialsFromTokens } = require("./lib/auth");
+const { isVideoMimeType } = require("./lib/media");
 
 const schemaRouter = require("./routes/schema");
 const createAuthRouter = require("./routes/auth");
@@ -37,29 +37,12 @@ app.use(
 app.use(
   createMediaRouter({
     google,
+    oauth2Client,
     requireLogin,
     setOAuthCredentialsFromTokens,
     isVideoMimeType
   })
 );
-
-function requireLogin(req, res, next) {
-  if (!req.session.tokens || !req.session.tokens.access_token) {
-    return res
-      .status(401)
-      .send('Not logged in. Go to <a href="/auth/google">/auth/google</a>');
-  }
-  next();
-}
-
-function setOAuthCredentialsFromTokens(tokens) {
-  oauth2Client.setCredentials(tokens);
-  return oauth2Client;
-}
-
-function isVideoMimeType(mimeType) {
-  return typeof mimeType === "string" && mimeType.startsWith("video/");
-}
 
 app.get("/", (req, res) => {
   res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
@@ -74,8 +57,11 @@ app.get("/stream/:fileId", async (req, res) => {
         error: "No Google token available. Sign in again at /auth/google"
       });
     }
-
-    const auth = setOAuthCredentialsFromTokens(latestTokensRef.current);
+    
+    const auth = setOAuthCredentialsFromTokens(
+      oauth2Client,
+      latestTokensRef.current
+    );
     const drive = google.drive({ version: "v3", auth });
 
     const metaResponse = await drive.files.get({
