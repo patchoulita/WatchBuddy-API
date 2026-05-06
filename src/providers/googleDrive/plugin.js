@@ -1,4 +1,6 @@
 // src/providers/googleDrive/plugin.js
+const { toMediaCatalog } = require("../../models/media");
+
 function createGoogleDrivePlugin({
   googleDriveService,
   isVideoMimeType
@@ -7,21 +9,7 @@ function createGoogleDrivePlugin({
     const data = await googleDriveService.listVideoFiles(tokens);
     const files = data.files || [];
 
-    const items = files
-      .filter(file => isVideoMimeType(file.mimeType))
-      .map(file => ({
-        id: file.id,
-        title: file.name || "Untitled Video",
-        type: "video",
-        mimeType: file.mimeType || null,
-        size: file.size || null,
-        durationMillis: file.videoMediaMetadata?.durationMillis || null,
-        width: file.videoMediaMetadata?.width || null,
-        height: file.videoMediaMetadata?.height || null,
-        thumbnail: file.thumbnailLink || null,
-        canDownload: file.capabilities?.canDownload ?? null,
-        streamUrl: `https://${host}/stream/${encodeURIComponent(file.id)}`
-      }));
+    const items = toMediaCatalog(files, host, isVideoMimeType);
 
     return {
       items,
