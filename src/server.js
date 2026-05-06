@@ -10,6 +10,7 @@ const createAuthRouter = require("./routes/auth");
 const createMediaRouter = require("./routes/media");
 const createStreamRouter = require("./routes/stream");
 const createProviders = require("./providers");
+const selectProvider = require("./providers/selectProvider");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -33,7 +34,7 @@ const providers = createProviders({
   isVideoMimeType
 });
 
-const currentProviderEntry = providers.googleDrive;
+const currentProviderEntry = selectProvider(providers);
 const currentProvider = currentProviderEntry.plugin;
 
 app.use(
