@@ -2,14 +2,14 @@
 const express = require("express");
 
 function createMediaRouter({
-  googleDrivePlugin,
+  provider,
   requireLogin
 }) {
   const router = express.Router();
 
   router.get("/media", requireLogin, async (req, res) => {
     try {
-      const catalog = await googleDrivePlugin.getMediaCatalog(
+      const catalog = await provider.getMediaCatalog(
         req.session.tokens,
         req.get("host")
       );
