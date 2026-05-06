@@ -20,16 +20,6 @@ app.use(
   })
 );
 
-app.use(schemaRouter);
-
-app.use(
-  createAuthRouter({
-    oauth2Client,
-    SCOPES,
-    latestTokensRef
-  })
-);
-
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -41,6 +31,16 @@ const SCOPES = [
 ];
 
 const latestTokensRef = { current: null };
+
+app.use(schemaRouter);
+
+app.use(
+  createAuthRouter({
+    oauth2Client,
+    SCOPES,
+    latestTokensRef
+  })
+);
 
 function requireLogin(req, res, next) {
   if (!req.session.tokens || !req.session.tokens.access_token) {
