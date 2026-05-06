@@ -9,9 +9,12 @@ function createMediaRouter({
 
   router.get("/media", requireLogin, async (req, res) => {
     try {
+      const pageToken = req.query.pageToken || null;
+
       const catalog = await provider.getMediaCatalog(
         req.session.tokens,
-        req.get("host")
+        req.get("host"),
+        { pageToken }
       );
 
       res.json(catalog);
