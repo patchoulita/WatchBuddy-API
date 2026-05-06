@@ -48,6 +48,10 @@ function isVideoMimeType(mimeType) {
 }
 
 app.get("/", (req, res) => {
+  res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
+});
+
+app.get("/api/v1/schema", (req, res) => {
   const baseUrl = `https://${req.get("host")}`;
 
   res.json({
@@ -55,7 +59,9 @@ app.get("/", (req, res) => {
     name: "Nobody TV",
     description: "Streaming nowhere...",
     version: "1.0.0",
-    mediaUrl: `${baseUrl}/media`
+    endpoints: {
+      media: `${baseUrl}/media`
+    }
   });
 });
 
