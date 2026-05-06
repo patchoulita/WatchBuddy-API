@@ -5,6 +5,7 @@ const createStreamRouter = require("./routes/stream");
 const createSchemaRouter = require("./routes/schema");
 const createHealthRouter = require("./routes/health");
 const createRootRouter = require("./routes/root");
+const createPluginsRouter = require("./routes/plugins");
 
 function mountAppRoutes(app, {
   oauth2Client,
@@ -27,6 +28,12 @@ function mountAppRoutes(app, {
   app.use(
     createSchemaRouter({
       getSchema: providerContext.getSchema
+    })
+  );
+
+  app.use(
+    createPluginsRouter({
+      providerManifest: providerContext.manifest
     })
   );
 
