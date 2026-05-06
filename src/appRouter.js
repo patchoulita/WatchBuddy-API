@@ -3,6 +3,7 @@ const createAuthRouter = require("./routes/auth");
 const createMediaRouter = require("./routes/media");
 const createStreamRouter = require("./routes/stream");
 const createSchemaRouter = require("./routes/schema");
+const createHealthRouter = require("./routes/health");
 
 function mountAppRoutes(app, {
   oauth2Client,
@@ -11,6 +12,8 @@ function mountAppRoutes(app, {
   providerContext,
   isVideoMimeType
 }) {
+  app.use(createHealthRouter());
+  
   app.use(
     createAuthRouter({
       oauth2Client,
