@@ -99,6 +99,61 @@ function createProviderApiRouter({
     }
   });
 
+  router.get("/api/v1/load_item", async (req, res) => {
+    try {
+      const requestedPlugin = req.query.plugin;
+      const encodedUrl = req.query.encoded_url || "";
+
+      if (!requestedPlugin || !encodedUrl) {
+        return res.status(410).json({
+          error: `/api/v1/load_item?plugin=${encodeURIComponent(
+            providerManifest.provider_name
+          )}&encoded_url=`
+        });
+      }
+
+      if (requestedPlugin !== providerManifest.provider_name) {
+        return res.status(410).json({
+          error: `/api/v1/load_item?plugin=${encodeURIComponent(
+            providerManifest.provider_name
+          )}&encoded_url=`
+        });
+      }
+
+      const decodedUrl = decodeURIComponent(encodedUrl);
+
+      if (!decodedUrl.startsWith("drive-item://")) {
+        return res.status(400).json({
+          error: "Unsupported encoded_url"
+        });
+      }
+
+      const fileId = decodedUrl.replace("drive-item://", "");
+      const tokens = await tokenStore.getTokens();
+
+      if (!tokens || !tokens.access_token) {
+        return res.status(401).json({
+          error: "No Google token available. Visit /auth/google in a browser to authorize Nobody TV."
+        });
+      }
+
+      const result = await provider.getItemDetails(
+        tokens,
+        fileId,
+        req.get("host")
+      );
+
+      res.json({ result });
+    } catch (error) {
+      const details = error.response?.data || error.message;
+
+      res.status(500).json({
+        error: "Failed to load item",
+        details
+      });
+    }
+  });
+
   return router;
 }
 
