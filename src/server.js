@@ -5,13 +5,10 @@ const { google, oauth2Client, SCOPES } = require("./config/google");
 const { requireLogin, setOAuthCredentialsFromTokens } = require("./lib/auth");
 const { isVideoMimeType } = require("./lib/media");
 
-const schemaRouter = require("./routes/schema");
-const createAuthRouter = require("./routes/auth");
-const createMediaRouter = require("./routes/media");
-const createStreamRouter = require("./routes/stream");
 const createProviders = require("./providers");
 const selectProvider = require("./providers/selectProvider");
 const createProviderContext = require("./providers/createProviderContext");
+const mountAppRoutes = require("./appRouter");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -39,34 +36,13 @@ const providerContext = createProviderContext(
   selectProvider(providers)
 );
 
-app.use(
-  schemaRouter({
-    getSchema: providerContext.getSchema
-  })
-);
-
-app.use(
-  createAuthRouter({
-    oauth2Client,
-    SCOPES,
-    latestTokensRef
-  })
-);
-
-app.use(
-  createMediaRouter({
-    provider: providerContext.plugin,
-    requireLogin
-  })
-);
-
-app.use(
-  createStreamRouter({
-    provider: providerContext.plugin,
-    latestTokensRef,
-    isVideoMimeType
-  })
-);
+mountAppRoutes(app, {
+  oauth2Client,
+  latestTokensRef,
+  requireLogin,
+  providerContext,
+  isVideoMimeType
+});
 
 app.get("/", (req, res) => {
   res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
