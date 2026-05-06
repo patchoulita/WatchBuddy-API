@@ -1,8 +1,9 @@
-require("dotenv").config();
+
 
 const express = require("express");
 const session = require("express-session");
-const { google } = require("googleapis");
+const env = require("./config/env");
+const { google, oauth2Client, SCOPES } = require("./config/google");
 
 const schemaRouter = require("./routes/schema");
 const createAuthRouter = require("./routes/auth");
@@ -11,25 +12,15 @@ const createMediaRouter = require("./routes/media");
 const app = express();
 app.set("trust proxy", 1);
 
-const port = process.env.PORT || 3000;
+const port = env.PORT;
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
   })
 );
-
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-);
-
-const SCOPES = [
-  "https://www.googleapis.com/auth/drive.readonly"
-];
 
 const latestTokensRef = { current: null };
 
