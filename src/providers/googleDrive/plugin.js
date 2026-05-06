@@ -5,8 +5,8 @@ function createGoogleDrivePlugin({
   googleDriveService,
   isVideoMimeType
 }) {
-  async function getMediaCatalog(tokens, host) {
-    const data = await googleDriveService.listVideoFiles(tokens);
+  async function getMediaCatalog(tokens, host, { pageToken = null } = {}) {
+    const data = await googleDriveService.listVideoFiles(tokens, pageToken);
     const files = data.files || [];
 
     const items = toMediaCatalog(files, host, isVideoMimeType);
