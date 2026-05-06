@@ -11,6 +11,7 @@ const createMediaRouter = require("./routes/media");
 const createStreamRouter = require("./routes/stream");
 const createProviders = require("./providers");
 const selectProvider = require("./providers/selectProvider");
+const createProviderContext = require("./providers/createProviderContext");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -34,12 +35,13 @@ const providers = createProviders({
   isVideoMimeType
 });
 
-const currentProviderEntry = selectProvider(providers);
-const currentProvider = currentProviderEntry.plugin;
+const providerContext = createProviderContext(
+  selectProvider(providers)
+);
 
 app.use(
   schemaRouter({
-    getSchema: currentProviderEntry.getSchema
+    getSchema: providerContext.getSchema
   })
 );
 
@@ -53,14 +55,14 @@ app.use(
 
 app.use(
   createMediaRouter({
-    provider: currentProvider,
+    provider: providerContext.plugin,
     requireLogin
   })
 );
 
 app.use(
   createStreamRouter({
-    provider: currentProvider,
+    provider: providerContext.plugin,
     latestTokensRef,
     isVideoMimeType
   })
