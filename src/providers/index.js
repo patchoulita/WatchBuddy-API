@@ -2,6 +2,7 @@
 const createGoogleDriveService = require("./googleDrive/service");
 const createGoogleDrivePlugin = require("./googleDrive/plugin");
 const googleDriveManifest = require("./googleDrive/manifest");
+const createProviderEntry = require("./createProviderEntry");
 
 const { getGoogleDriveProviderSchema } = require("./googleDrive/metadata");
 
@@ -21,14 +22,14 @@ function createProviders({
     googleDriveService,
     isVideoMimeType
   });
-  
+
   return {
-    googleDrive: {
+    googleDrive: createProviderEntry({
       manifest: googleDriveManifest,
       service: googleDriveService,
       plugin: googleDrivePlugin,
       getSchema: getGoogleDriveProviderSchema
-    }
+    })
   };
 }
 
