@@ -1,35 +1,38 @@
 const env = require("./config/env");
-const { google, oauth2Client, SCOPES } = require("./config/google");
-const { requireLogin, setOAuthCredentialsFromTokens } = require("./lib/auth");
+const { google, oauth2Client } = require("./config/google");
 const { isVideoMimeType } = require("./lib/media");
 
 const getProviderContext = require("./providers/getProviderContext");
 const mountAppRoutes = require("./appRouter");
 const createApp = require("./app");
+const getAuthContext = require("./auth/getAuthContext");
 
 const port = env.PORT;
 
-const sessionConfig = {
-  secret: env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
-};
+const authContext = getAuthContext({
+  sessionSecret: env.SESSION_SECRET,
+  cookieConfig: {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax"
+  }
+});
 
-const app = createApp({ sessionConfig });
-
-const latestTokensRef = { current: null };
+const app = createApp({
+  sessionConfig: authContext.sessionConfig
+});
 
 const providerContext = getProviderContext({
   google,
   oauth2Client,
-  setOAuthCredentialsFromTokens,
+  setOAuthCredentialsFromTokens: authContext.setOAuthCredentialsFromTokens,
   isVideoMimeType
 });
 
 mountAppRoutes(app, {
   oauth2Client,
-  latestTokensRef,
-  requireLogin,
+  latestTokensRef: authContext.latestTokensRef,
+  requireLogin: authContext.requireLogin,
   providerContext,
   isVideoMimeType
 });
