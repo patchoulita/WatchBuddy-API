@@ -7,41 +7,48 @@ const mountAppRoutes = require("./appRouter");
 const createApp = require("./app");
 const getAuthContext = require("./auth/getAuthContext");
 
-const port = env.PORT;
+async function createServer() {
+  const port = env.PORT;
 
-const authContext = getAuthContext({
-  sessionSecret: env.SESSION_SECRET,
-  cookieConfig: {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax"
-  }
-});
+  const authContext = await getAuthContext({
+    sessionSecret: env.SESSION_SECRET,
+    redisUrl: env.REDIS_URL,
+    cookieConfig: {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax"
+    }
+  });
 
-const app = createApp({
-  sessionConfig: authContext.sessionConfig
-});
+  const app = createApp({
+    sessionConfig: authContext.sessionConfig
+  });
 
-const providerContext = getProviderContext({
-  google,
-  oauth2Client,
-  setOAuthCredentialsFromTokens: authContext.setOAuthCredentialsFromTokens,
-  isVideoMimeType
-});
+  const providerContext = getProviderContext({
+    google,
+    oauth2Client,
+    setOAuthCredentialsFromTokens: authContext.setOAuthCredentialsFromTokens,
+    isVideoMimeType
+  });
 
-mountAppRoutes(app, {
-  oauth2Client,
-  latestTokensRef: authContext.latestTokensRef,
-  requireLogin: authContext.requireLogin,
-  providerContext,
-  isVideoMimeType
-});
+  mountAppRoutes(app, {
+    oauth2Client,
+    latestTokensRef: authContext.latestTokensRef,
+    requireLogin: authContext.requireLogin,
+    providerContext,
+    isVideoMimeType
+  });
 
-app.get("/", (req, res) => {
-  res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
-});
+  app.get("/", (req, res) => {
+    res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
+  });
+
+  return {
+    app,
+    port
+  };
+}
 
 module.exports = {
-  app,
-  port
+  createServer
 };
