@@ -33,9 +33,14 @@ const providers = createProviders({
   isVideoMimeType
 });
 
-const currentProvider = providers.googleDrive.plugin;
+const currentProviderEntry = providers.googleDrive;
+const currentProvider = currentProviderEntry.plugin;
 
-app.use(schemaRouter);
+app.use(
+  schemaRouter({
+    getSchema: currentProviderEntry.getSchema
+  })
+);
 
 app.use(
   createAuthRouter({
