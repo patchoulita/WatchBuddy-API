@@ -10,6 +10,7 @@ const createAuthRouter = require("./routes/auth");
 const createMediaRouter = require("./routes/media");
 const createStreamRouter = require("./routes/stream");
 const createGoogleDriveService = require("./providers/googleDrive/service");
+const createGoogleDrivePlugin = require("./providers/googleDrive/plugin");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -32,6 +33,11 @@ const googleDriveService = createGoogleDriveService({
   setOAuthCredentialsFromTokens
 });
 
+const googleDrivePlugin = createGoogleDrivePlugin({
+  googleDriveService,
+  isVideoMimeType
+});
+
 app.use(schemaRouter);
 
 app.use(
@@ -44,15 +50,14 @@ app.use(
 
 app.use(
   createMediaRouter({
-    googleDriveService,
-    requireLogin,
-    isVideoMimeType
+    googleDrivePlugin,
+    requireLogin
   })
 );
 
 app.use(
   createStreamRouter({
-    googleDriveService,
+    googleDrivePlugin,
     latestTokensRef,
     isVideoMimeType
   })
