@@ -33,7 +33,8 @@ function mountAppRoutes(app, {
   app.use(
     createMediaRouter({
       provider: providerContext.plugin,
-      requireLogin
+      requireLogin,
+      tokenStore
     })
   );
 
