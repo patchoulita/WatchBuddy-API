@@ -46,14 +46,15 @@ function isVideoMimeType(mimeType) {
 }
 
 app.get("/", (req, res) => {
-  res.send(`
-    <h1>WatchBuddy Google Drive Provider</h1>
-    <ol>
-      <li><a href="/auth/google">Sign in with Google</a></li>
-      <li><a href="/media">List video files</a></li>
-    </ol>
-    <p>This provider lists Google Drive video files and proxies video bytes through /stream/:fileId.</p>
-  `);
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  res.json({
+    id: "nobody-tv",
+    name: "Nobody TV",
+    description: "Streaming nowhere...",
+    version: "1.0.0",
+    mediaUrl: `${baseUrl}/media`
+  });
 });
 
 app.get("/auth/google", (req, res) => {
