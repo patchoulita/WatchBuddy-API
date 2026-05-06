@@ -29,7 +29,7 @@ function createGoogleDriveService({
 
     const response = await drive.files.get({
       fileId,
-      fields: "id,name,mimeType,size,capabilities/canDownload",
+      fields: "id,name,mimeType,size,thumbnailLink,videoMediaMetadata,capabilities/canDownload",
       supportsAllDrives: true
     });
 
