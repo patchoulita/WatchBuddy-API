@@ -2,37 +2,19 @@
 const express = require("express");
 
 function createMediaRouter({
-  googleDriveService,
-  requireLogin,
-  isVideoMimeType
+  googleDrivePlugin,
+  requireLogin
 }) {
   const router = express.Router();
 
   router.get("/media", requireLogin, async (req, res) => {
     try {
-      const data = await googleDriveService.listVideoFiles(req.session.tokens);
-      const files = data.files || [];
+      const catalog = await googleDrivePlugin.getMediaCatalog(
+        req.session.tokens,
+        req.get("host")
+      );
 
-      const items = files
-        .filter(file => isVideoMimeType(file.mimeType))
-        .map(file => ({
-          id: file.id,
-          title: file.name || "Untitled Video",
-          type: "video",
-          mimeType: file.mimeType || null,
-          size: file.size || null,
-          durationMillis: file.videoMediaMetadata?.durationMillis || null,
-          width: file.videoMediaMetadata?.width || null,
-          height: file.videoMediaMetadata?.height || null,
-          thumbnail: file.thumbnailLink || null,
-          canDownload: file.capabilities?.canDownload ?? null,
-          streamUrl: `https://${req.get("host")}/stream/${encodeURIComponent(file.id)}`
-        }));
-
-      res.json({
-        items,
-        nextPageToken: data.nextPageToken || null
-      });
+      res.json(catalog);
     } catch (error) {
       const details = error.response?.data || error.message;
 
