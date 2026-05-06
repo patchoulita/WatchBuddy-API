@@ -5,6 +5,8 @@ const session = require("express-session");
 const { google } = require("googleapis");
 
 const app = express();
+app.set("trust proxy", 1);
+
 const port = process.env.PORT || 3000;
 
 app.use(
@@ -46,7 +48,7 @@ function isVideoMimeType(mimeType) {
 }
 
 app.get("/", (req, res) => {
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const baseUrl = `https://${req.get("host")}`;
 
   res.json({
     id: "nobody-tv",
