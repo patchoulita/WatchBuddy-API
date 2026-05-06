@@ -5,6 +5,7 @@ const session = require("express-session");
 const { google } = require("googleapis");
 
 const schemaRouter = require("./routes/schema");
+const createAuthRouter = require("./routes/auth");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -21,6 +22,14 @@ app.use(
 
 app.use(schemaRouter);
 
+app.use(
+  createAuthRouter({
+    oauth2Client,
+    SCOPES,
+    latestTokensRef
+  })
+);
+
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -31,7 +40,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive.readonly"
 ];
 
-let latestTokens = null;
+const latestTokensRef = { current: null };
 
 function requireLogin(req, res, next) {
   if (!req.session.tokens || !req.session.tokens.access_token) {
@@ -53,46 +62,6 @@ function isVideoMimeType(mimeType) {
 
 app.get("/", (req, res) => {
   res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
-});
-
-app.get("/auth/google", (req, res) => {
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "offline",
-    prompt: "consent",
-    scope: SCOPES
-  });
-
-  res.redirect(authUrl);
-});
-
-app.get("/auth/callback", async (req, res) => {
-  try {
-    const code = req.query.code;
-
-    if (!code) {
-      return res.status(400).send("Missing authorization code");
-    }
-
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
-    req.session.tokens = tokens;
-    latestTokens = {
-      ...latestTokens,
-      ...tokens
-    };
-
-    res.send(`
-      <h1>Google login successful</h1>
-      <p>Your Drive OAuth token has been saved in the session.</p>
-      <p><a href="/media">Next: View media</a></p>
-      <pre>${JSON.stringify(tokens, null, 2)}</pre>
-    `);
-  } catch (error) {
-    res.status(500).send(`
-      <h1>OAuth failed</h1>
-      <pre>${error.message}</pre>
-    `);
-  }
 });
 
 app.get("/media", requireLogin, async (req, res) => {
@@ -143,13 +112,13 @@ app.get("/stream/:fileId", async (req, res) => {
   try {
     const { fileId } = req.params;
 
-    if (!latestTokens || !latestTokens.access_token) {
+    if (!latestTokensRef.current || !latestTokensRef.current.access_token) {
       return res.status(401).json({
         error: "No Google token available. Sign in again at /auth/google"
       });
     }
 
-    const auth = setOAuthCredentialsFromTokens(latestTokens);
+    const auth = setOAuthCredentialsFromTokens(latestTokensRef.current);
     const drive = google.drive({ version: "v3", auth });
 
     const metaResponse = await drive.files.get({
