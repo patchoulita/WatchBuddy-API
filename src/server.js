@@ -40,10 +40,6 @@ async function createServer() {
     isVideoMimeType
   });
 
-  app.get("/", (req, res) => {
-    res.send('Nobody TV provider is running. Schema: <a href="/api/v1/schema">/api/v1/schema</a>');
-  });
-
   return {
     app,
     port
