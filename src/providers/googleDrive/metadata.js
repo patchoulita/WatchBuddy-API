@@ -5,7 +5,8 @@ function getGoogleDriveProviderSchema(baseUrl) {
   return {
     provider_name: googleDriveManifest.provider_name,
     description: googleDriveManifest.description,
-    proxy_url: baseUrl
+    proxy_url: baseUrl,
+    capabilities: googleDriveManifest.capabilities
   };
 }
 
