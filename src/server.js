@@ -1,5 +1,3 @@
-const express = require("express");
-const session = require("express-session");
 const env = require("./config/env");
 const { google, oauth2Client, SCOPES } = require("./config/google");
 const { requireLogin, setOAuthCredentialsFromTokens } = require("./lib/auth");
@@ -9,19 +7,20 @@ const createProviders = require("./providers");
 const selectProvider = require("./providers/selectProvider");
 const createProviderContext = require("./providers/createProviderContext");
 const mountAppRoutes = require("./appRouter");
-
-const app = express();
-app.set("trust proxy", 1);
+const createApp = require("./app");
 
 const port = env.PORT;
 
-app.use(
-  session({
-    secret: env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-  })
-);
+const sessionConfig = {
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    // paste the exact same cookie config you currently use
+  }
+};
+
+const app = createApp({ sessionConfig });
 
 const latestTokensRef = { current: null };
 
