@@ -3,7 +3,7 @@ const express = require("express");
 
 function createStreamRouter({
   provider,
-  latestTokensRef,
+  tokenStore,
   isVideoMimeType
 }) {
   const router = express.Router();
@@ -12,14 +12,16 @@ function createStreamRouter({
     try {
       const { fileId } = req.params;
 
-      if (!latestTokensRef.current || !latestTokensRef.current.access_token) {
+      const tokens = await tokenStore.getTokens();
+
+      if (!tokens || !tokens.access_token) {
         return res.status(401).json({
           error: "No Google token available. Sign in again at /auth/google"
         });
       }
 
       const file = await provider.getStreamFile(
-        latestTokensRef.current,
+        tokens,
         fileId
       );
       const totalSize = Number(file.size);
@@ -39,7 +41,7 @@ function createStreamRouter({
 
       if (!req.headers.range) {
         const mediaResponse = await provider.getStreamResponse(
-          latestTokensRef.current,
+          tokens,
           fileId
         );
 
@@ -66,7 +68,7 @@ function createStreamRouter({
       const chunkSize = (end - start) + 1;
 
       const mediaResponse = await provider.getStreamResponse(
-        latestTokensRef.current,
+        tokens,
         fileId,
         `bytes=${start}-${end}`
       );

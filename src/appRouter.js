@@ -7,7 +7,7 @@ const createHealthRouter = require("./routes/health");
 
 function mountAppRoutes(app, {
   oauth2Client,
-  latestTokensRef,
+  tokenStore,
   requireLogin,
   providerContext,
   isVideoMimeType
@@ -17,7 +17,7 @@ function mountAppRoutes(app, {
   app.use(
     createAuthRouter({
       oauth2Client,
-      latestTokensRef
+      tokenStore
     })
   );
 
@@ -37,7 +37,7 @@ function mountAppRoutes(app, {
   app.use(
     createStreamRouter({
       provider: providerContext.plugin,
-      latestTokensRef,
+      tokenStore,
       isVideoMimeType
     })
   );

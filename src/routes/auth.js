@@ -1,14 +1,13 @@
 // src/routes/auth.js
 const express = require("express");
 
-function createAuthRouter({ oauth2Client, SCOPES, latestTokensRef }) {
+function createAuthRouter({ oauth2Client, tokenStore }) {
   const router = express.Router();
 
   router.get("/auth/google", (req, res) => {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
-      prompt: "consent",
-      scope: SCOPES
+      prompt: "consent"
     });
 
     res.redirect(authUrl);
@@ -26,14 +25,11 @@ function createAuthRouter({ oauth2Client, SCOPES, latestTokensRef }) {
       oauth2Client.setCredentials(tokens);
       req.session.tokens = tokens;
 
-      latestTokensRef.current = {
-        ...latestTokensRef.current,
-        ...tokens
-      };
-
+      await tokenStore.setTokens(tokens);
+    
       res.send(`
         <h1>Google login successful</h1>
-        <p>Your Drive OAuth token has been saved in the session.</p>
+        <p>Your Drive OAuth token has been saved.</p>
         <p><a href="/media">Next: View media</a></p>
         <pre>${JSON.stringify(tokens, null, 2)}</pre>
       `);

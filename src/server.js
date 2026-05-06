@@ -32,9 +32,9 @@ async function createServer() {
   });
 
   mountAppRoutes(app, {
-    oauth2Client,
-    latestTokensRef: authContext.latestTokensRef,
+    tokenStore: authContext.tokenStore,
     requireLogin: authContext.requireLogin,
+    oauth2Client,
     providerContext,
     isVideoMimeType
   });

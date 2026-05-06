@@ -1,6 +1,7 @@
 // src/auth/getAuthContext.js
 const { RedisStore } = require("connect-redis");
 const { getRedisClient } = require("../lib/redis");
+const createTokenStore = require("./tokenStore");
 
 const {
   requireLogin,
@@ -8,8 +9,6 @@ const {
 } = require("../lib/auth");
 
 async function getAuthContext({ sessionSecret, cookieConfig, redisUrl }) {
-  const latestTokensRef = { current: null };
-
   const redisClient = await getRedisClient(redisUrl);
   const sessionStore = new RedisStore({
     client: redisClient,
@@ -24,9 +23,11 @@ async function getAuthContext({ sessionSecret, cookieConfig, redisUrl }) {
     cookie: cookieConfig
   };
 
+  const tokenStore = await createTokenStore({ redisUrl });
+
   return {
     sessionConfig,
-    latestTokensRef,
+    tokenStore,
     requireLogin,
     setOAuthCredentialsFromTokens
   };
