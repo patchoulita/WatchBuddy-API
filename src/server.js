@@ -33,7 +33,7 @@ const providers = createProviders({
   isVideoMimeType
 });
 
-const googleDrivePlugin = providers.googleDrive.plugin;
+const currentProvider = providers.googleDrive.plugin;
 
 app.use(schemaRouter);
 
@@ -47,14 +47,14 @@ app.use(
 
 app.use(
   createMediaRouter({
-    googleDrivePlugin,
+    provider: currentProvider,
     requireLogin
   })
 );
 
 app.use(
   createStreamRouter({
-    googleDrivePlugin,
+    provider: currentProvider,
     latestTokensRef,
     isVideoMimeType
   })
