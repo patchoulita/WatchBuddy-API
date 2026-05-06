@@ -7,11 +7,37 @@ function createAuthRouter({ oauth2Client, tokenStore }) {
   router.get("/auth/google", (req, res) => {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
-      prompt: "consent",
+      prompt: "select_account consent",
       scope: ["https://www.googleapis.com/auth/drive.readonly"]
     });
 
     res.redirect(authUrl);
+  });
+
+  router.get("/auth/logout", async (req, res) => {
+    try {
+      await tokenStore.clearTokens();
+
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).send(`
+            <h1>Logout failed</h1>
+            <pre>${err.message}</pre>
+          `);
+        }
+
+        res.send(`
+          <h1>Google account cleared</h1>
+          <p>The saved Drive token has been removed.</p>
+          <p><a href="/auth/google">Sign in with a different Google account</a></p>
+        `);
+      });
+    } catch (error) {
+      res.status(500).send(`
+        <h1>Logout failed</h1>
+        <pre>${error.message}</pre>
+      `);
+    }
   });
 
   router.get("/auth/callback", async (req, res) => {
