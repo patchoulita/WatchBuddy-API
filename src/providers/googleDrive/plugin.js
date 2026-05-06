@@ -44,6 +44,28 @@ function createGoogleDrivePlugin({
     };
   }
 
+  async function getLinks(tokens, fileId, host) {
+    const file = await googleDriveService.getFileMetadata(tokens, fileId);
+
+    if (!isVideoMimeType(file.mimeType)) {
+      throw new Error("Requested file is not a video");
+    }
+
+    if (file.capabilities && file.capabilities.canDownload === false) {
+      throw new Error("Download is not allowed for this file");
+    }
+
+    return [
+      {
+        name: file.name || "Google Drive Stream",
+        url: `https://${host}/stream/${encodeURIComponent(file.id)}`,
+        referer: "",
+        user_agent: "",
+        subtitles: []
+      }
+    ];
+  }
+
   async function getStreamFile(tokens, fileId) {
     return googleDriveService.getFileMetadata(tokens, fileId);
   }
@@ -55,6 +77,7 @@ function createGoogleDrivePlugin({
   return {
     getMediaCatalog,
     getItemDetails,
+    getLinks,
     getStreamFile,
     getStreamResponse
   };
