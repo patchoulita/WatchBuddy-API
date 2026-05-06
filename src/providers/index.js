@@ -2,6 +2,8 @@
 const createGoogleDriveService = require("./googleDrive/service");
 const createGoogleDrivePlugin = require("./googleDrive/plugin");
 
+const { getGoogleDriveProviderSchema } = require("./googleDrive/metadata");
+
 function createProviders({
   google,
   oauth2Client,
@@ -22,7 +24,8 @@ function createProviders({
   return {
     googleDrive: {
       service: googleDriveService,
-      plugin: googleDrivePlugin
+      plugin: googleDrivePlugin,
+      getSchema: getGoogleDriveProviderSchema
     }
   };
 }
