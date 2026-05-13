@@ -8,22 +8,20 @@ const createApp = require("./app");
 const getAuthContext = require("./auth/getAuthContext");
 
 async function createServer() {
+  console.log("createServer: start");
   console.log("REDIS_URL present?", Boolean(process.env.REDIS_URL));
+
   const port = env.PORT;
+  console.log("createServer: before getAuthContext");
 
   const authContext = await getAuthContext({
-    sessionSecret: env.SESSION_SECRET,
-    redisUrl: process.env.REDIS_URL,
-    cookieConfig: {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax"
-    }
+    redisUrl: process.env.REDIS_URL
   });
 
-  const app = createApp({
-    sessionConfig: authContext.sessionConfig
-  });
+  console.log("createServer: after getAuthContext");
+
+  const app = createApp();
+  console.log("createServer: after createApp");
 
   const providerContext = getProviderContext({
     google,
@@ -32,6 +30,8 @@ async function createServer() {
     isVideoMimeType
   });
 
+  console.log("createServer: after getProviderContext");
+
   mountAppRoutes(app, {
     tokenStore: authContext.tokenStore,
     requireLogin: authContext.requireLogin,
@@ -39,6 +39,8 @@ async function createServer() {
     providerContext,
     isVideoMimeType
   });
+
+  console.log("createServer: after mountAppRoutes");
 
   return {
     app,

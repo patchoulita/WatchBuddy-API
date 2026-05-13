@@ -1,12 +1,24 @@
 // src/lib/auth.js
-function requireLogin(req, res, next) {
-  if (!req.session.tokens || !req.session.tokens.access_token) {
-    return res
-      .status(401)
-      .send('Not logged in. Go to <a href="/auth/google">/auth/google</a>');
-  }
+function createRequireLogin({ tokenStore }) {
+  return async function requireLogin(req, res, next) {
+    try {
+      const tokens = await tokenStore.getTokens();
 
-  next();
+      if (!tokens || !tokens.access_token) {
+        return res
+          .status(401)
+          .send('Not logged in. Go to <a href="/auth/google">/auth/google</a>');
+      }
+
+      req.watchbuddyTokens = tokens;
+      next();
+    } catch (error) {
+      res.status(500).send(`
+        <h1>Auth check failed</h1>
+        <pre>${error.message}</pre>
+      `);
+    }
+  };
 }
 
 function setOAuthCredentialsFromTokens(oauth2Client, tokens) {
@@ -15,6 +27,6 @@ function setOAuthCredentialsFromTokens(oauth2Client, tokens) {
 }
 
 module.exports = {
-  requireLogin,
+  createRequireLogin,
   setOAuthCredentialsFromTokens
 };

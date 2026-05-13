@@ -13,7 +13,7 @@ function createMediaRouter({
       const pageToken = req.query.pageToken || null;
 
       const catalog = await provider.getMediaCatalog(
-        req.session.tokens,
+        req.watchbuddyTokens,
         req.get("host"),
         { pageToken }
       );
@@ -29,9 +29,9 @@ function createMediaRouter({
     }
   });
 
-  // Provider-facing catalog endpoint for WatchBuddy
   router.get("/api/v1/media", async (req, res) => {
     try {
+      const pageToken = req.query.pageToken || null;
       const tokens = await tokenStore.getTokens();
 
       if (!tokens || !tokens.access_token) {
@@ -42,7 +42,8 @@ function createMediaRouter({
 
       const catalog = await provider.getMediaCatalog(
         tokens,
-        req.get("host")
+        req.get("host"),
+        { pageToken }
       );
 
       res.json(catalog);
@@ -55,7 +56,7 @@ function createMediaRouter({
       });
     }
   });
-  
+
   router.get("/video-test/:fileId", (req, res) => {
     const { fileId } = req.params;
 

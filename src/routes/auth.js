@@ -18,20 +18,11 @@ function createAuthRouter({ oauth2Client, tokenStore }) {
     try {
       await tokenStore.clearTokens();
 
-      req.session.destroy((err) => {
-        if (err) {
-          return res.status(500).send(`
-            <h1>Logout failed</h1>
-            <pre>${err.message}</pre>
-          `);
-        }
-
-        res.send(`
-          <h1>Google account cleared</h1>
-          <p>The saved Drive token has been removed.</p>
-          <p><a href="/auth/google">Sign in with a different Google account</a></p>
-        `);
-      });
+      res.send(`
+        <h1>Google account cleared</h1>
+        <p>The saved Drive token has been removed.</p>
+        <p><a href="/auth/google">Sign in with a different Google account</a></p>
+      `);
     } catch (error) {
       res.status(500).send(`
         <h1>Logout failed</h1>
@@ -50,10 +41,9 @@ function createAuthRouter({ oauth2Client, tokenStore }) {
 
       const { tokens } = await oauth2Client.getToken(code);
       oauth2Client.setCredentials(tokens);
-      req.session.tokens = tokens;
 
       await tokenStore.setTokens(tokens);
-    
+
       res.send(`
         <h1>Google login successful</h1>
         <p>Your Drive OAuth token has been saved.</p>

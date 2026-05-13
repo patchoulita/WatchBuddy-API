@@ -1,0 +1,4 @@
+name = "nobody-tv"
+main = "worker.mjs"
+compatibility_date = "2026-05-13"
+compatibility_flags = ["nodejs_compat"]
