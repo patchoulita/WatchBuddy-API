@@ -1,4 +1,5 @@
 name = "nobody-tv"
 main = "worker.mjs"
 compatibility_date = "2026-05-13"
-compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
